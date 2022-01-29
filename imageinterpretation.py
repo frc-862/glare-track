@@ -82,13 +82,12 @@ for c in cnts:
 	# can assume that we have found our screen
 	if len(approx) == 4:
 		screenCnt = approx
-		if biggest == None:
+		try:
+			if cv2.contourArea(screenCnt) > cv2.contourArea(biggest):
+				biggest = screenCnt
+				continue
+		except:
 			biggest = screenCnt
-			continue
-		if cv2.contourArea(screenCnt) > cv2.contourArea(biggest):
-			biggest = screenCnt
-			continue
-		break
 # show the contour (outline) of the piece of paper
 print("STEP 2: Find contours of paper")
 cv2.drawContours(image, [biggest], -1, (0, 255, 0), 2)
