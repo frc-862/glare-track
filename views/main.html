@@ -1,0 +1,312 @@
+<html>
+    <head>
+        <title>Glare Tracking System</title>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Open+Sans" rel="stylesheet">
+    </head>
+    <style>
+        *{
+            font-family: 'Open Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            color:#23005c;
+        }
+        body{
+            background-color: #f2f2f2;
+            width: 100%;
+            height: 100%;
+            
+        }
+        .main_area{
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            width: 80%;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .menu_area{
+            position: absolute;
+            top: 20;
+            right: 20;
+        }
+        .basecontainer{
+            padding:20px;
+            border-radius: 8px;
+            display: inline-flex;
+        }
+        .shadowcontainer{
+            background-color: #f2f2f2;
+            box-shadow: 1px 1px 2px 1px rgba(0,0,0,.15);
+            display: inline-flex;
+            
+        }
+        .circlecontainer{
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            background-color: #f2f2f2;
+            box-shadow: 1px 1px 2px 1px rgba(0,0,0,.15);
+            justify-content: center;
+            align-items: center;
+            cursor:pointer
+        }
+        .menuicon{
+            font-size:30px;
+            transition: all .25s ease-in-out;
+            cursor: pointer;
+            pointer-events: none;
+        }
+        .circlecontainer:hover .menuicon{
+            font-size:34px;
+        }
+        .overlay_area{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,.5);
+            display: none;
+            z-index: 2;
+        }
+        .button{
+            background-color: #23005c;
+            border: none;
+            border-radius: 8px;
+            color: #f2f2f2;
+            padding: 10px;
+            cursor: pointer;
+            font-size:16px;
+            transition: all .25s ease-in-out;
+        }
+        .button:hover{
+            background-color: #1b0046;
+            color: #f2f2f2;
+        }
+        .select{
+            background-color: #e6e6e6;
+            border-bottom: 2px solid #23005c;
+            border-radius: 8px 8px 2px 2px;
+            color: #23005c;
+            padding: 20px;
+            cursor: pointer;
+            font-size:16px;
+
+            
+        }
+    </style>
+    <body>
+        <div class="main_area">
+            <div class="basecontainer shadowcontainer" style="width: 80%;text-align:center;display:inline-block;margin-left:5px">
+                <span style="font-size: 40px;font-weight:600">Digital Matches</span>
+                <br/>
+                <br/>
+                <span style="font-size: 20px;margin-right:5px">Match</span>
+                <select class="select" id="select_match">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+
+                </select>
+                <span style="font-size: 20px;margin-right:5px;margin-left:5px">with Team</span>
+                <select class="select" id="select_team">
+                    
+
+                </select>
+            
+                <div style="justify-content: flex-end;width:100%;display:flex">
+                    <input type="button" class="button" value="Start" style="display: inline-flex;margin-top:10px">
+                    <input type="button" class="button" value="View" style="display: inline-flex;margin-top:10px">
+                </div>
+                
+            </div>
+            <br/>
+            <br/>
+            <div class="basecontainer shadowcontainer" style="width: 80%;text-align:center;display:inline-block">
+                <span style="font-size: 40px;font-weight:600">Scan Matches</span>
+               <br/>
+               <br/>
+               <span style="font-size: 20px;margin-right:5px;margin-left:5px">0 matches have been scanned on this device...</span>
+
+            
+                <div style="justify-content: flex-end;width:100%;display:flex">
+                    <input type="button" class="button trigger" value="Enable Scanner" style="display: inline-flex;margin-top:10px" data-tag="addScan">
+                </div>
+                
+            </div>
+        </div>
+        <div class="menu_area">
+            <div style="display:flex">
+                <div class="basecontainer circlecontainer trigger" style="display:inline-flex;margin-left:10px" data-tag="changeOCR">
+                    <span class="material-icons-round menuicon">flag</span>
+                </div>
+                <div class="basecontainer circlecontainer trigger" style="display:inline-flex;margin-left:10px" data-tag="changeSettings">
+                    <span class="material-icons-round menuicon">settings</span>
+                </div>
+            </div>
+            
+        </div>
+        <div id="overlay" class="overlay_area" style="display:none">
+            <div class="main_area">
+                <div class="basecontainer shadowcontainer" style="display: inline-block;">
+                    <div id="OLAYC_changeOCR" style="display: none;">
+                        Hiyo 1
+                    </div>
+                    <div id="OLAYC_changeSettings" style="display: none;">
+                        Hiyo 2
+                    </div>
+                    <div id="OLAYC_addScan" style="display: none;">
+                        <video style="border-radius: 8px;" autoplay="true" id="scanner_video" ></video>
+                        <input type="button" class="button" value="Take Picture" style="display: block;margin-top:10px" id="scanner_snap">
+                        <div id="images"></div>
+                    </div>
+                    
+                    <input type="button" class="button" value="Close" style="display: block;margin-top:10px" onclick="closeOverlay()">
+                </div>
+                
+            </div>
+            
+            <canvas id='imageArea' width="1280" height="960" style="z-index:-1"></canvas>
+        </div>
+    </body>
+    <script>
+        var matchData = {
+            "2":{
+                "red_1":"862",
+                "red_2":"1023",
+                "red_3":"254",
+                "blue_1":"1337",
+                "blue_2":"2468",
+                "blue_3":"3245",
+            },
+            "4":{
+                "red_1":"862",
+                "red_2":"1023",
+                "red_3":"254",
+                "blue_1":"1337",
+                "blue_2":"2468",
+                "blue_3":"3245",
+            },
+            "6":{
+                "red_1":"862",
+                "red_2":"1023",
+                "red_3":"254",
+                "blue_1":"1337",
+                "blue_2":"2468",
+                "blue_3":"3245",
+            }
+            
+        }
+
+        var currentOverlay = "";
+        Array.from(document.getElementsByClassName("trigger")).forEach(el => {
+            el.addEventListener("click", function(evt){
+                let tag = evt.srcElement.dataset["tag"];
+                if(tag == "changeOCR"){
+                    document.getElementById("overlay").style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    currentOverlay = tag;
+
+                }else if(tag == "changeSettings"){
+                    document.getElementById("overlay").style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    currentOverlay = tag;
+                }
+                else if(tag == "addScan"){
+                    document.getElementById("overlay").style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    currentOverlay = tag;
+                    startScan();
+                }
+            });
+        });
+        function closeOverlay(){
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("OLAYC_" + currentOverlay).style.display = "none";
+            var video = document.getElementById("scanner_video");
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+
+        function reloadTeams(){
+            let finalString = ``;
+            let match = document.getElementById("select_match").value;
+            for (const [key, value] of Object.entries(matchData[match])) {
+                finalString += `<option value="${value}">${value}</option>`;
+            }
+            document.getElementById("select_team").innerHTML = finalString;
+            let alliance = getAllianceFromMatch(document.getElementById("select_match").value, document.getElementById("select_team").value);
+            //document.getElementById("select_alliance").innerHTML = (alliance == "red" ? "Red" : "Blue") + " Alliance";
+            document.getElementById("select_team").style.color = alliance;
+        }
+        function initialize(){
+            document.getElementById("select_match").addEventListener('change', function(){
+                reloadTeams();
+
+            });
+
+            document.getElementById("select_team").addEventListener('change', function(){
+                let alliance = getAllianceFromMatch(document.getElementById("select_match").value, document.getElementById("select_team").value);
+                //document.getElementById("select_alliance").innerHTML = (alliance == "red" ? "Red" : "Blue") + " Alliance";
+                document.getElementById("select_team").style.color = alliance;
+            });
+
+            let finalString = ``;
+            for (const [key, value] of Object.entries(matchData)) {
+                finalString += `<option value="${key}">${key}</option>`;
+            }
+            document.getElementById("select_match").innerHTML = finalString;
+            reloadTeams();
+
+            
+        }
+        
+        function getAllianceFromMatch(match, team){
+            for(const [key, value] of Object.entries(matchData[match])){
+                if(value == team){
+                    return key.split("_")[0];
+                }
+            }
+        }
+
+        function startScan(){
+            var video = document.getElementById("scanner_video");
+
+            if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                video.srcObject = stream;
+                })
+                .catch(function (err0r) {
+                console.log("Something went wrong!");
+                });
+            }
+        }
+
+        document.getElementById("scanner_snap").addEventListener('click', function(){
+            var canvas = document.getElementById('imageArea');
+            var video = document.getElementById("scanner_video");
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            let data = canvas.toDataURL("image/png");
+            console.log(data);
+
+            //let image = new Image();
+            //image.src = data;
+
+            let senddata = {"image": data};
+
+            fetch('/upload/scan', {method: "POST",headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+              }, body: JSON.stringify(senddata)});
+
+            //scanToJpg();
+        });
+
+        
+        initialize();
+    </script>
+
+</html>
