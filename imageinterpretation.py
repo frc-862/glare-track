@@ -72,6 +72,7 @@ cnts = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 cnts = imutils.grab_contours(cnts)
 cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:5]
 # loop over the contours
+biggest = None
 for c in cnts:
     
 	# approximate the contour
@@ -81,11 +82,17 @@ for c in cnts:
 	# can assume that we have found our screen
 	if len(approx) == 4:
 		screenCnt = approx
+		if biggest == None:
+			biggest = screenCnt
+			continue
+		if cv2.contourArea(screenCnt) > cv2.contourArea(biggest):
+			biggest = screenCnt
+			continue
 		break
 # show the contour (outline) of the piece of paper
 print("STEP 2: Find contours of paper")
-cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
-warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
+cv2.drawContours(image, [biggest], -1, (0, 255, 0), 2)
+warped = four_point_transform(orig, biggest.reshape(4, 2) * ratio)
 # convert the warped image to grayscale, then threshold it
 # to give it that 'black and white' paper effect
 warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
