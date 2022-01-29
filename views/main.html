@@ -159,8 +159,11 @@
                         Hiyo 2
                     </div>
                     <div id="OLAYC_addScan" style="display: none;">
-                        <video style="border-radius: 8px;" autoplay="true" id="scanner_video" ></video>
+                        <video style="border-radius: 8px;width:800px" autoplay="true" id="scanner_video"></video>
                         <input type="button" class="button" value="Take Picture" style="display: block;margin-top:10px" id="scanner_snap">
+                        <select class="select" id="scanner_camera">
+
+                        </select>
                         <div id="images"></div>
                     </div>
                     
@@ -260,6 +263,17 @@
             document.getElementById("select_match").innerHTML = finalString;
             reloadTeams();
 
+            navigator.mediaDevices.enumerateDevices().then(function(stuff){
+                stuff.forEach(function(device){
+                    if(device.kind == "videoinput"){
+                        document.getElementById("scanner_camera").innerHTML += `<option value="${device.deviceId}">${device.label}</option>`;
+                    }
+                });
+            });
+
+            document.getElementById("scanner_camera").addEventListener('change', function(){
+                startScan();
+            });
             
         }
         
@@ -273,9 +287,9 @@
 
         function startScan(){
             var video = document.getElementById("scanner_video");
-
+            
             if (navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
+            navigator.mediaDevices.getUserMedia({ video: { deviceId: {exact: document.getElementById("scanner_camera").value } } })
                 .then(function (stream) {
                 video.srcObject = stream;
                 })
