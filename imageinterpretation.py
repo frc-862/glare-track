@@ -90,12 +90,12 @@ for c in cnts:
 			biggest = screenCnt
 # show the contour (outline) of the piece of paper
 print("STEP 2: Find contours of paper")
-cv2.drawContours(image, [biggest], -1, (0, 255, 0), 2)
+cv2.drawContours(image, [biggest], -1, (0, 255, 0), 4)
 warped = four_point_transform(orig, biggest.reshape(4, 2) * ratio)
 # convert the warped image to grayscale, then threshold it
 # to give it that 'black and white' paper effect
 warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-T = threshold_local(warped, 11, offset = 7, method = "gaussian")
+T = threshold_local(warped, 7, offset = 2, method = "gaussian")
 warped = (warped > T).astype("uint8") * 255
 # show the original and scanned images
 print("STEP 3: Apply perspective transform")

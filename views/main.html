@@ -51,7 +51,8 @@
             box-shadow: 1px 1px 2px 1px rgba(0,0,0,.15);
             justify-content: center;
             align-items: center;
-            cursor:pointer
+            cursor:pointer;
+            transition: .25s all ease-in-out;   
         }
         .menuicon{
             font-size:30px;
@@ -61,6 +62,7 @@
         }
         .circlecontainer:hover .menuicon{
             font-size:34px;
+            transform: rotate(-10deg)
         }
         .overlay_area{
             position: absolute;
@@ -91,24 +93,35 @@
             border-bottom: 2px solid #23005c;
             border-radius: 8px 8px 2px 2px;
             color: #23005c;
-            padding: 20px;
+            padding: 10px;
             cursor: pointer;
             font-size:16px;
 
             
         }
+        .text{
+            background-color: #e6e6e6;
+            border: none;
+            z-index: 1;
+            border-bottom: 2px solid #23005c;
+            border-radius: 8px 8px 2px 2px;
+            color: #23005c;
+            padding: 10px;
+            font-size:16px;
+            user-select: all;
+            -webkit-user-select: all;
+            pointer-events: all;
+        }
     </style>
     <body>
-        <div class="main_area">
+        <div class="main_area" id="area_selection">
             <div class="basecontainer shadowcontainer" style="width: 80%;text-align:center;display:inline-block;margin-left:5px">
                 <span style="font-size: 40px;font-weight:600">Digital Matches</span>
                 <br/>
                 <br/>
                 <span style="font-size: 20px;margin-right:5px">Match</span>
                 <select class="select" id="select_match">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
+
 
                 </select>
                 <span style="font-size: 20px;margin-right:5px;margin-left:5px">with Team</span>
@@ -118,8 +131,7 @@
                 </select>
             
                 <div style="justify-content: flex-end;width:100%;display:flex">
-                    <input type="button" class="button" value="Start" style="display: inline-flex;margin-top:10px">
-                    <input type="button" class="button" value="View" style="display: inline-flex;margin-top:10px">
+                    <input id="selection_start" type="button" class="button" value="Start" style="display: inline-flex;margin-top:10px">
                 </div>
                 
             </div>
@@ -137,6 +149,71 @@
                 </div>
                 
             </div>
+            <br/>
+            <br/>
+            <div class="basecontainer shadowcontainer" style="width: 80%;text-align:center;display:inline-block">
+                <span style="font-size: 40px;font-weight:600">Viewing System</span>
+               <br/>
+               <br/>
+               <span style="font-size: 20px;margin-right:5px">There are 0 matches stored on this device</span>
+            
+                <div style="justify-content: flex-end;width:100%;display:flex">
+                    <input type="button" class="button trigger" value="Go to Analysis" style="display: inline-flex;margin-top:10px" data-tag="viewList">
+                </div>
+                
+            </div>
+        </div>
+        <div class="main_area" style="display: none;width:100%;height:100%" id="area_drawing">
+            <canvas width="1400" height="800" id="drawOnForm"></canvas>
+            <div style="display:flex;position:absolute;bottom: 20; left: 20">
+                <div class="basecontainer circlecontainer" style="display:inline-flex;margin-right:10px" id="draw_finish">
+                    <span class="material-icons-round menuicon">task_alt</span>
+                </div>
+                <div class="basecontainer circlecontainer" style="display:inline-flex;margin-right:10px" id="draw_undo">
+                    <span class="material-icons-round menuicon">undo</span>
+                </div>
+                <div class="basecontainer circlecontainer" style="display:inline-flex;margin-right:10px" id="draw_redo">
+                    <span class="material-icons-round menuicon">redo</span>
+                </div>
+            </div>
+            
+        </div>
+        <div class="main_area" style="display: none;width:100%;height:100%" id="area_view">
+            <div>
+                <br/>
+                <br/>
+                <div class="basecontainer shadowcontainer" style="width: 80%;text-align:center;display:inline-block">
+                    <span style="font-size: 40px;font-weight:600">Filter Viewing</span>
+                   <br/>
+                   <br/>
+                   <span style="font-size: 20px;margin-right:5px">Look for entries for match</span>
+                   <select class="select" id="view_match">
+
+
+                </select>
+                <span style="font-size: 20px;margin-right:5px;margin-left:5px">and team</span>
+                   <select class="select" id="view_team">
+
+
+                </select>
+                <span style="font-size: 20px;margin-right:5px;margin-left:5px">.</span>
+                
+                    <div style="justify-content: flex-end;width:100%;display:flex">
+                        <input type="button" class="button" value="Search" style="display: inline-flex;margin-top:10px" id="view_search">
+                    </div>
+                    
+                </div>
+                <br/>
+                <br/>
+
+                <div id="view_entries" style="max-height: 60%;overflow-y:scroll"></div>
+            </div>
+            <div style="display:flex;position:absolute;bottom: 20; left: 20">
+                <div class="basecontainer circlecontainer" style="display:inline-flex;margin-right:10px" id="view_finish">
+                    <span class="material-icons-round menuicon">task_alt</span>
+                </div>
+            </div>
+            
         </div>
         <div class="menu_area">
             <div style="display:flex">
@@ -155,54 +232,76 @@
                     <div id="OLAYC_changeOCR" style="display: none;">
                         Hiyo 1
                     </div>
-                    <div id="OLAYC_changeSettings" style="display: none;">
-                        Hiyo 2
+                    <div id="OLAYC_changeSettings" style="display: none;padding:10px">
+                        <span style="font-size: 20px;margin-bottom:10px;font-weight:600;display:block">Settings</span>
+                        <div style="display: block;margin-bottom:10px">
+                            <span style="font-size: 14px;margin-right:5px;margin-left:5px">Form Image</span>
+                            <select class="select" id="settings_form">
+
+                            </select>
+                        </div>
+                        <div style="display: block;margin-bottom:10px">
+                            <span style="font-size: 14px;margin-right:5px;margin-left:5px">Comp Code</span>
+                            <input type="text" class="text" id="settings_compcode" placeholder="***">
+                            <select class="select" id="settings_compcode_suggestions" style="width:20px">
+                                <option value="a">MIJAC2020</option>
+                            </select>
+                            <div class="button" id="settings_compcode_reload" style="display: inline-block; padding:5px">
+                                <span style="color:white" class="material-icons-round">update</span>
+                            </div>
+                        </div>
+                        <div style="display: block;margin-bottom:10px">
+                            <span style="font-size: 14px;margin-right:5px;margin-left:5px">Device Identifier</span>
+                            <input type="text" class="text" id="settings_deviceid" placeholder="***">
+                        </div>
+                        
                     </div>
                     <div id="OLAYC_addScan" style="display: none;">
-                        <video style="border-radius: 8px;width:800px" autoplay="true" id="scanner_video"></video>
-                        <input type="button" class="button" value="Take Picture" style="display: block;margin-top:10px" id="scanner_snap">
-                        <select class="select" id="scanner_camera">
+                        <div id="step1">
+                            <video style="border-radius: 8px;width:800px;display:block" autoplay="true" id="scanner_video"></video>
+                            <input type="button" class="button" value="Take Picture" style="display: inline-block;margin-top:10px" id="scanner_snap">
+                            <select class="select" id="scanner_camera">
 
-                        </select>
+                            </select>
+                        </div>
+                        
                         <div id="images"></div>
                     </div>
                     
-                    <input type="button" class="button" value="Close" style="display: block;margin-top:10px" onclick="closeOverlay()">
+                    <input type="button" class="button" value="Close" style="display: inline-block;margin-top:10px" onclick="closeOverlay()">
                 </div>
                 
             </div>
             
-            <canvas id='imageArea' width="1280" height="960" style="z-index:-1"></canvas>
+            <canvas id='imageArea' width="1280" height="960" style="z-index:-1;display:none"></canvas>
         </div>
     </body>
+    <script src="./js/draw.js"></script>
     <script>
         var matchData = {
-            "2":{
-                "red_1":"862",
-                "red_2":"1023",
-                "red_3":"254",
-                "blue_1":"1337",
-                "blue_2":"2468",
-                "blue_3":"3245",
-            },
-            "4":{
-                "red_1":"862",
-                "red_2":"1023",
-                "red_3":"254",
-                "blue_1":"1337",
-                "blue_2":"2468",
-                "blue_3":"3245",
-            },
-            "6":{
-                "red_1":"862",
-                "red_2":"1023",
-                "red_3":"254",
-                "blue_1":"1337",
-                "blue_2":"2468",
-                "blue_3":"3245",
-            }
+            
             
         }
+
+        document.getElementById("selection_start").disabled = true;
+        //document.getElementById("selection_view").disabled = true;
+
+        document.getElementById("view_search").addEventListener('click', function (){
+            var match = document.getElementById("view_match").value;
+            var team = document.getElementById("view_team").value;
+            fetch('/get/dataimages').then(res => res.json()).then(data => {
+                var object = data;
+                document.getElementById("view_entries").innerHTML = "";
+                object["images"].forEach(function(image){
+                    if(image.includes(".png")){
+                        if((image.split("-")[1].includes(match) || match == "all") && (image.split("-")[2].includes(team) || match == "all") && image.includes(document.getElementById("settings_compcode").value)){
+                            document.getElementById("view_entries").innerHTML += "<div class='basecontainer shadowcontainer' style='width: 60%;text-align:center;display:inline-block'><span  style='font-size: 14px;margin-right:5px;margin-left:5px'>Match " + image.split("-")[1] + ", Team " + image.split("-")[2].split("(")[0] + "</span><img src='./"+image+"' style='width:100%'></div><br/><br/>";
+                        }
+                    }
+                    
+                });
+              });
+        });
 
         var currentOverlay = "";
         Array.from(document.getElementsByClassName("trigger")).forEach(el => {
@@ -210,17 +309,22 @@
                 let tag = evt.srcElement.dataset["tag"];
                 if(tag == "changeOCR"){
                     document.getElementById("overlay").style.display = "unset";
-                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "block";
                     currentOverlay = tag;
 
                 }else if(tag == "changeSettings"){
                     document.getElementById("overlay").style.display = "unset";
-                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "block";
                     currentOverlay = tag;
+                }
+                else if(tag == "viewList"){
+                    document.getElementById("area_view").style.display = "unset";
+                    document.getElementById("area_selection").style.display = "none";
+                    document.getElementById("view_entries").innerHTML = "";
                 }
                 else if(tag == "addScan"){
                     document.getElementById("overlay").style.display = "unset";
-                    document.getElementById("OLAYC_" + tag).style.display = "unset";
+                    document.getElementById("OLAYC_" + tag).style.display = "block";
                     currentOverlay = tag;
                     startScan();
                 }
@@ -232,8 +336,31 @@
             var video = document.getElementById("scanner_video");
             video.srcObject.getTracks().forEach(track => track.stop());
         }
+        
+        function checkMatchStatus(){
+            var match = document.getElementById("select_match").value;
+            var team = document.getElementById("select_team").value;
+            fetch('/check/iscompleted', {
+                headers : {
+                    "compcode" : document.getElementById("settings_compcode").value,
+                    "match" : match,
+                    "team" : team
+                }
+            }).then(res => res.json()).then(data => {
+                var result = data["success"];
+                if(result){
+                    document.getElementById("selection_start").value = "Restart";
+                    //document.getElementById("selection_view").style.display = "inline-flex";
+                }else {
+                    document.getElementById("selection_start").value = "Start";
+                    //document.getElementById("selection_view").style.display = "none";
+                }
+              });
+        }
 
         function reloadTeams(){
+            document.getElementById("selection_start").disabled = false;
+            //document.getElementById("selection_view").disabled = false;
             let finalString = ``;
             let match = document.getElementById("select_match").value;
             for (const [key, value] of Object.entries(matchData[match])) {
@@ -243,7 +370,11 @@
             let alliance = getAllianceFromMatch(document.getElementById("select_match").value, document.getElementById("select_team").value);
             //document.getElementById("select_alliance").innerHTML = (alliance == "red" ? "Red" : "Blue") + " Alliance";
             document.getElementById("select_team").style.color = alliance;
+            checkMatchStatus();
         }
+
+
+
         function initialize(){
             document.getElementById("select_match").addEventListener('change', function(){
                 reloadTeams();
@@ -251,17 +382,14 @@
             });
 
             document.getElementById("select_team").addEventListener('change', function(){
+                document.getElementById("selection_start").disabled = false;
+                //document.getElementById("selection_view").disabled = false;
                 let alliance = getAllianceFromMatch(document.getElementById("select_match").value, document.getElementById("select_team").value);
                 //document.getElementById("select_alliance").innerHTML = (alliance == "red" ? "Red" : "Blue") + " Alliance";
                 document.getElementById("select_team").style.color = alliance;
+                checkMatchStatus();
             });
 
-            let finalString = ``;
-            for (const [key, value] of Object.entries(matchData)) {
-                finalString += `<option value="${key}">${key}</option>`;
-            }
-            document.getElementById("select_match").innerHTML = finalString;
-            reloadTeams();
 
             navigator.mediaDevices.enumerateDevices().then(function(stuff){
                 stuff.forEach(function(device){
@@ -274,7 +402,8 @@
             document.getElementById("scanner_camera").addEventListener('change', function(){
                 startScan();
             });
-            
+            reloadForms();
+            reloadComps();
         }
         
         function getAllianceFromMatch(match, team){
@@ -284,6 +413,58 @@
                 }
             }
         }
+
+        function reloadForms(){
+            fetch('/get/formimages').then(res => res.json()).then(data => {
+                var object = data;
+                document.getElementById("settings_form").innerHTML = "";
+                object["forms"].forEach(function(form){
+                      document.getElementById("settings_form").innerHTML += `<option value="${form}">${form}</option>`;
+                });
+              });
+        }
+
+        function reloadComps(){
+            fetch('/get/compcodes').then(res => res.json()).then(data => {
+                var object = data;
+                document.getElementById("settings_compcode_suggestions").innerHTML = "";
+                object["codes"].forEach(function(code){
+                      document.getElementById("settings_compcode_suggestions").innerHTML += `<option value="${code}">${code}</option>`;
+                });
+                document.getElementById("settings_compcode_suggestions").value = "";
+              });
+        }
+
+        document.getElementById("settings_compcode_reload").addEventListener("click", function(){
+            fetch('/get/matches', {
+                headers : {
+                    "compcode" : document.getElementById("settings_compcode").value
+                }
+            }).then(res => res.json()).then(data => {
+                matchData = data["matches"];
+                console.log(matchData);
+                let finalString = ``;
+                let finalStringT = ``;
+                let alreadyAdded = [];
+                for (const [key, value] of Object.entries(matchData)) {
+                    finalString += `<option value="${key}">${key}</option>`;
+                    for (const [key2, value2] of Object.entries(value)) {
+                        if(alreadyAdded.indexOf(value2) == -1){
+                            finalStringT += `<option value="${value2}">${value2}</option>`;
+                            alreadyAdded.push(value2);
+                        }
+                    }
+                }
+                document.getElementById("select_match").innerHTML = finalString;
+                finalString += `<option value="all">ALL</option>`;
+                document.getElementById("view_match").innerHTML = finalString;
+                finalStringT += `<option value="all">ALL</option>`;
+                document.getElementById("view_team").innerHTML = finalStringT;
+                reloadTeams();
+                document.getElementById("selection_start").disabled = false;
+                //document.getElementById("selection_view").disabled = false;
+              });
+        });
 
         function startScan(){
             var video = document.getElementById("scanner_video");
@@ -299,6 +480,11 @@
             }
         }
 
+
+        document.getElementById("settings_compcode_suggestions").addEventListener('change', function(evt){
+            document.getElementById("settings_compcode").value = evt.srcElement.value;
+            document.getElementById("settings_compcode_suggestions").value = "";
+        });
         document.getElementById("scanner_snap").addEventListener('click', function(){
             var canvas = document.getElementById('imageArea');
             var video = document.getElementById("scanner_video");
@@ -314,12 +500,107 @@
             fetch('/upload/scan', {method: "POST",headers: {
                 'Content-Type': 'application/json'
                 // 'Content-Type': 'application/x-www-form-urlencoded',
-              }, body: JSON.stringify(senddata)});
+              }, body: JSON.stringify(senddata)}).then(function(res){
+                  if(res.status == 200){
+
+                  }
+              });
 
             //scanToJpg();
         });
 
+        function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
+            var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
+            var rtnWidth = srcWidth * ratio;
+            var rtnHeight = srcHeight * ratio;
+            return {
+                width: rtnWidth,
+                height: rtnHeight
+            };
+        }
+
+        document.getElementById("draw_finish").addEventListener('click', function(evt){
+            var canvas = document.getElementById('drawOnForm');
+            let data = canvas.toDataURL("image/png");
+            console.log(data);
+
+            //let image = new Image();
+            //image.src = data;
+
+            let senddata = {"image": data, "match" : document.getElementById("select_match").value, "team" : document.getElementById("select_team").value, "compcode": document.getElementById("settings_compcode").value, "form": document.getElementById("settings_form").value};
+
+            fetch('/upload/digital', {method: "POST",headers: {
+                'Content-Type': 'application/json'
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+              }, body: JSON.stringify(senddata)}).then(function(res){
+                  if(res.status == 200){
+
+                  }
+              });
+              document.getElementById("area_selection").style.display = "unset";
+            document.getElementById("area_drawing").style.display = "none";
+        })
+
+        document.getElementById("view_finish").addEventListener('click', function(evt){
+
+              document.getElementById("area_selection").style.display = "unset";
+            document.getElementById("area_view").style.display = "none";
+        })
+
+        document.getElementById('selection_start').addEventListener('click', function(evt){
+            document.getElementById("area_selection").style.display = "none";
+            document.getElementById("area_drawing").style.display = "unset";
+            /*let canvas = document.getElementById("drawOnForm");
+            let c = canvas.getContext("2d");
+            var img = new Image();
+            img.src = "./images/formimages/"+document.getElementById("settings_form").value;
+            
+            img.onload = function(){
+                  
+                c.clearRect(0,0,canvas.width, canvas.height);
+                c.drawImage(img, 0,0, img.width, img.height,
+                      centerShift_x,centerShift_y,img.width*ratio, img.height*ratio);
+
+                
+            };
+            */
+
+        });
+
+
+
+        /*var canvas = document.getElementById('drawOnForm');
+        var context = canvas.getContext('2d');
+        var isIdle = true;
+        function drawstart(event) {
+            context.beginPath();
+            context.moveTo(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop);
+            isIdle = false;
+        }
+        function drawmove(event) {
+            if (isIdle) return;
+            context.lineTo(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop);
+            context.stroke();
+        }
+        function drawend(event) {
+            if (isIdle) return;
+            drawmove(event);
+            isIdle = true;
+        }
+        function touchstart(event) { drawstart(event.touches[0]) }
+        function touchmove(event) { drawmove(event.touches[0]); event.preventDefault(); }
+        function touchend(event) { drawend(event.changedTouches[0]) }
+
+        canvas.addEventListener('touchstart', touchstart, false);
+        canvas.addEventListener('touchmove', touchmove, false);
+        canvas.addEventListener('touchend', touchend, false);        
+
+        canvas.addEventListener('mousedown', drawstart, false);
+        canvas.addEventListener('mousemove', drawmove, false);
+        canvas.addEventListener('mouseup', drawend, false);
+
         
+        */
         initialize();
     </script>
 
