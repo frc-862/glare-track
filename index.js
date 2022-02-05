@@ -6,13 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const { createWorker } = require('tesseract.js');
 const spawn = require("child_process").spawn;
-const bluetooth = require('node-bluetooth');
  
-// create bluetooth device instance
-const device = new bluetooth.DeviceINQ();
-device.on('finished',  console.log.bind(console, 'finished')).on('found', function found(address, name){
-  console.log('Found: ' + address + ' with name ' + name);
-}).scan();
+const SerialPort = require('serialport')
 
 app.use(bodyParser.urlencoded({
     extended: true,
