@@ -7,6 +7,10 @@ var backImage = undefined;
 var imageSettings = {};
 
 var working = false;
+var touching = false;
+
+var lastTouchPoint = [];
+
 document.getElementById('selection_start').addEventListener('click', function(evt){
     working = true;
     data = {
@@ -53,8 +57,14 @@ document.addEventListener('mousemove', onMouseMove, false)
 function onMouseMove(e){
   e.preventDefault();
   e.stopPropagation();
-  x = e.clientX;
-  y = e.clientY;
+  if(e.type == "touchmove"){
+      x = e.touches[0].clientX;
+      y = e.touches[0].clientY;
+  }else{
+    x = e.clientX;
+    y = e.clientY;
+  }
+  
   if(tool == "draw" && tracking){
     if(color != "erase"){
       currentPoints.push([x-rect.left,y-rect.top])
@@ -67,6 +77,28 @@ function onMouseMove(e){
     
 }
 
+function onMouseDown(e){
+  if(!tracking){
+    currentPoints = [];
+    erasedPoints = [];
+    //c.strokeStyle = "#FFFFFF";
+    c.moveTo(x-rect.left,y-rect.top);
+    //console.log("moved");
+  }
+  tracking = true;
+  touching = false;
+}
+function onMouseUp(e){
+  if(color != "none" && color != "yellow" && color != "erase" && tool == "draw"){
+    data[color]["sets"].push(currentPoints.map((x) => x));
+  }else if(tool == "draw" && color == "yellow"){
+    tempLines.push(currentPoints.map((x) => x));
+  }
+  tracking = false;
+  queuedToRedo = [];
+  touching = false;
+}
+
 function getMouseX() {
     return x;
 }
@@ -76,41 +108,12 @@ function getMouseY() {
 }
 
 var tracking = false;
-parentMap.addEventListener("mousedown", function(){
-  if(!tracking){
-    currentPoints = [];
-    erasedPoints = [];
-    c.moveTo(x-rect.left,y-rect.top)
-  }
-  tracking = true;
-})
-parentMap.addEventListener("mouseup", function(){
-  if(color != "none" && color != "yellow" && color != "erase" && tool == "draw"){
-    data[color]["sets"].push(currentPoints.map((x) => x));
-  }else if(tool == "draw" && color == "yellow"){
-    tempLines.push(currentPoints.map((x) => x));
-  }
-  tracking = false
-  queuedToRedo = [];
-})
+parentMap.addEventListener("mousedown", onMouseDown, false);
+parentMap.addEventListener("mouseup", onMouseUp, false);
 
-parentMap.addEventListener("touchstart", function(){
-    if(!tracking){
-      currentPoints = [];
-      erasedPoints = [];
-      c.moveTo(x-rect.left,y-rect.top)
-    }
-    tracking = true;
-  }, false)
-  parentMap.addEventListener("touchend", function(){
-    if(color != "none" && color != "yellow" && color != "erase" && tool == "draw"){
-      data[color]["sets"].push(currentPoints.map((x) => x));
-    }else if(tool == "draw" && color == "yellow"){
-      tempLines.push(currentPoints.map((x) => x));
-    }
-    tracking = false
-    queuedToRedo = [];
-  }, false)
+parentMap.addEventListener("touchstart", onMouseDown, false)
+  parentMap.addEventListener("touchend", onMouseUp, false)
+  parentMap.addEventListener("touchmove", onMouseMove, false);
 /*parentMap.addEventListener("touchmove", function (e) {
   var touch = e.touches[0];
   var mouseEvent = new MouseEvent("mousemove", {
@@ -143,27 +146,31 @@ function reUpdateLines(){
 
   
   data["all"]["sets"].forEach(rSet => {
-    var erased = false;
-    c.lineWidth = 2;
-    c.globalCompositeOperation="source-over";
-    c.beginPath();
-    c.moveTo(rSet[0][0], rSet[0][1])
-    rSet.forEach(p => {
-      if(closeToErase(p)){
-        erased = true;
-        return false
-      }
-      c.lineTo(p[0], p[1]);
-      return true;
-    });
-    if(erased){
-      console.log("Removed")
-      data["all"]["sets"].splice(i, 1);
-    }else{
+    try{
+      var erased = false;
+      c.lineWidth = 2;
+      c.globalCompositeOperation="source-over";
+      c.beginPath();
+      c.moveTo(rSet[0][0], rSet[0][1])
+      rSet.forEach(p => {
+        if(closeToErase(p)){
+          erased = true;
+          return false
+        }
+        c.lineTo(p[0], p[1]);
+        return true;
+      });
       if(erased){
-        //console.log("What")
-      }
-      c.stroke();
+        console.log("Removed")
+        data["all"]["sets"].splice(i, 1);
+      }else{
+        if(erased){
+          //console.log("What")
+        }
+        c.stroke();
+      } 
+    }catch(e){
+      
     }
     i += 1;
     
@@ -180,9 +187,12 @@ setInterval(function(){
     if(working){
     if(tracking){
         if(tool == "draw"){
-        
-        c.lineTo(x-rect.left, y-rect.top);
-        c.stroke();
+          //console.log("drawn")
+          c.lineTo(x-rect.left, y-rect.top);
+          
+          c.stroke();
+          //c.strokeStyle = "#FF0000";
+          
         }
         
     }
